@@ -9,10 +9,14 @@ import 'http_request_config.dart';
 class DioHttpClient implements AppHttpClient {
   Dio? _dio;
   String Function()? _getToken;
+  int? _timeount;
   DioHttpClient(String baseUrl, {int? timeout, String Function()? getToken}) {
+    _timeount = timeout ?? 50000;
     _dio = Dio(BaseOptions(
       baseUrl: baseUrl,
-      receiveTimeout: timeout ?? LibConstants.defaultTimeoutTenSeconds,
+      connectTimeout: 50000,
+      receiveTimeout: 50000,
+      sendTimeout: 50000,
     ));
 
     _getToken = getToken;
@@ -42,33 +46,57 @@ class DioHttpClient implements AppHttpClient {
   Future<T?> _executeRequest<T>(
       String method, String url, data, HttpRequestConfig? options) async {
     try {
-      //AppAnalyticsUtils.log(name, parameters)
-      var headers = options?.headers ?? {};
-      var token = options?.token ?? (_getToken != null ? _getToken!() : null);
-      if (!AppStringUtils.isEmptyOrNull(token)) {
-        headers['Authorization'] = 'Bearer $token';
-      }
+      //TODO AppAnalyticsUtils.log(name, parameters)
+      var configOptions = _getRequestOptions(method, url, data, options);
       var response = await _dio!.request(
         url,
         data: data,
-        options: Options(
-            method: method,
-            headers: headers,
-            receiveTimeout:
-                options?.timeout ?? LibConstants.defaultTimeoutTenSeconds,
-            contentType: options?.contentType ?? "application/json"),
+        options: configOptions,
         onReceiveProgress: options?.receiveProgress,
       );
       if (response.data != null) {
-        if (response.data['status'] == 'erro') {
-          throw AppError(response.data['mensagem']);
+        if (HttpResponseType.bytes != options?.responseType) {
+          if (response.data['status'] == 'erro') {
+            throw AppError(response.data['mensagem']);
+          }
+        } else {
+          return response as T;
         }
-        return response.data as T;
+        return response.data;
       }
       return null;
     } catch (err) {
-      print(err);
+      //TODO AppAnalyticsUtils.log(name, parameters)
       rethrow;
+    }
+  }
+
+  Options _getRequestOptions(
+      String method, String url, data, HttpRequestConfig? options) {
+    var headers = options?.headers ?? {};
+    var token = options?.token ?? (_getToken != null ? _getToken!() : null);
+    if (!AppStringUtils.isEmptyOrNull(token)) {
+      headers['Authorization'] = 'Bearer $token';
+    }
+    return Options(
+        method: method,
+        headers: headers,
+        responseType: _getResponseType(options?.responseType),
+        receiveTimeout: _timeount,
+        contentType: options?.contentType ?? "application/json");
+  }
+
+  ResponseType? _getResponseType(HttpResponseType? type) {
+    if (type == null) return null;
+    switch (type) {
+      case HttpResponseType.bytes:
+        return ResponseType.bytes;
+      case HttpResponseType.stream:
+        return ResponseType.stream;
+      case HttpResponseType.plain:
+        return ResponseType.plain;
+      default:
+        return ResponseType.json;
     }
   }
 }

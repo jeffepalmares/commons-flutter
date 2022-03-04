@@ -1,11 +1,11 @@
-import 'package:dio/dio.dart';
+enum HttpResponseType { json, stream, plain, bytes }
 
 class HttpRequestConfig {
   Map<String, dynamic>? headers;
   String? contentType;
   String? token;
   int? timeout;
-  ResponseType? responseType;
+  HttpResponseType? responseType;
   Function(int count, int total)? receiveProgress;
 
   HttpRequestConfig({
