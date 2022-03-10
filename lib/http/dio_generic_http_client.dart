@@ -1,6 +1,7 @@
 import 'package:commons_flutter/constants/lib_constants.dart';
 import 'package:commons_flutter/exceptions/app_error.dart';
 import 'package:commons_flutter/utils/app_string_utils.dart';
+import 'package:commons_flutter/utils/network_utils.dart';
 import 'package:dio/dio.dart';
 import 'app_http_client.dart';
 import 'app_interceptor.dart';
@@ -9,14 +10,13 @@ import 'http_request_config.dart';
 class DioHttpClient implements AppHttpClient {
   Dio? _dio;
   String Function()? _getToken;
-  int? _timeount;
+  int? _timeout;
   DioHttpClient(String baseUrl, {int? timeout, String Function()? getToken}) {
-    _timeount = timeout ?? 50000;
+    _timeout = timeout ?? LibConstants.defaultTimeoutTenSeconds;
     _dio = Dio(BaseOptions(
       baseUrl: baseUrl,
-      connectTimeout: 50000,
-      receiveTimeout: 50000,
-      sendTimeout: 50000,
+      connectTimeout: _timeout,
+      receiveTimeout: _timeout,
     ));
 
     _getToken = getToken;
@@ -47,6 +47,7 @@ class DioHttpClient implements AppHttpClient {
       String method, String url, data, HttpRequestConfig? options) async {
     try {
       //TODO AppAnalyticsUtils.log(name, parameters)
+      await NetworkUtils.validateInternet();
       var configOptions = _getRequestOptions(method, url, data, options);
       var response = await _dio!.request(
         url,
@@ -82,7 +83,7 @@ class DioHttpClient implements AppHttpClient {
         method: method,
         headers: headers,
         responseType: _getResponseType(options?.responseType),
-        receiveTimeout: _timeount,
+        receiveTimeout: _timeout,
         contentType: options?.contentType ?? "application/json");
   }
 
