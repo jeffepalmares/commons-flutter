@@ -92,5 +92,16 @@ void main() {
         expect(value, 0);
       });
     });
+
+    group('reverseString', () {
+      test('in case value is null should return empty String', () {
+        var value = AppStringUtils.reverseString(null);
+        expect(value, isEmpty);
+      });
+      test('in case valid string shuld return reversed', () {
+        var value = AppStringUtils.reverseString("abc");
+        expect(value, "cba");
+      });
+    });
   });
 }

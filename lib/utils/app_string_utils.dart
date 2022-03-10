@@ -41,4 +41,14 @@ class AppStringUtils {
       return 0;
     }
   }
+
+  static String reverseString(String? value) {
+    try {
+      value = defaultValue(value);
+      value = value.split('').reversed.join();
+      return value;
+    } catch (e) {
+      return "";
+    }
+  }
 }
