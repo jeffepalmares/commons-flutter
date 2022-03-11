@@ -79,12 +79,13 @@ class DioHttpClient implements AppHttpClient {
     if (!AppStringUtils.isEmptyOrNull(token)) {
       headers['Authorization'] = 'Bearer $token';
     }
+    headers['Content-Type'] = options?.contentType ?? "application/json";
     return Options(
-        method: method,
-        headers: headers,
-        responseType: _getResponseType(options?.responseType),
-        receiveTimeout: _timeout,
-        contentType: options?.contentType ?? "application/json");
+      method: method,
+      headers: headers,
+      responseType: _getResponseType(options?.responseType),
+      receiveTimeout: _timeout,
+    );
   }
 
   ResponseType? _getResponseType(HttpResponseType? type) {
