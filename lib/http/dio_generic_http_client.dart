@@ -49,12 +49,14 @@ class DioHttpClient implements AppHttpClient {
       //TODO AppAnalyticsUtils.log(name, parameters)
       await NetworkUtils.validateInternet();
       var configOptions = _getRequestOptions(method, url, data, options);
+      _dio!.options.connectTimeout = options?.timeout ?? _timeout!;
       var response = await _dio!.request(
         url,
         data: data,
         options: configOptions,
         onReceiveProgress: options?.receiveProgress,
       );
+      _dio!.options.connectTimeout = _timeout!;
       if (response.data != null) {
         if (HttpResponseType.bytes != options?.responseType) {
           if (response.data['status'] == 'erro') {
