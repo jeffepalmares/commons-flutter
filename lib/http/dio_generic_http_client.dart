@@ -84,7 +84,7 @@ class DioHttpClient implements AppHttpClient {
       method: method,
       headers: headers,
       responseType: _getResponseType(options?.responseType),
-      receiveTimeout: _timeout,
+      receiveTimeout: options?.timeout ?? _timeout,
     );
   }
 
