@@ -6,11 +6,17 @@ import 'package:filesize/filesize.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:disk_space/disk_space.dart';
+import 'package:file_manager/file_manager.dart';
 
 class DiskUtils {
-  static Future<String> getFormatedInternalFreeDiskSpace() async {
+  static Future<double> getInternalFreeDiskSpace() async {
     var space = await DiskSpace.getFreeDiskSpace;
-    var diskSpace = ByteSize.FromMegaBytes(space!).toString('GB', 2);
+    return space ?? 0;
+  }
+
+  static Future<String> getFormatedInternalFreeDiskSpace() async {
+    var space = await getInternalFreeDiskSpace();
+    var diskSpace = ByteSize.FromMegaBytes(space).toString('GB', 2);
     return diskSpace;
   }
 
@@ -31,18 +37,35 @@ class DiskUtils {
     }
   }
 
-  static Future<String> getFormatedExternalFreeDiskSpace() async {
+  static Future<double> getExternalFreeDiskSpace() async {
     try {
-      Directory? directory = await getExternalStorageDirectory();
-      if (directory != null) {
-        var space = await DiskSpace.getFreeDiskSpaceForPath(directory.path);
-        return ByteSize.FromMegaBytes(space ?? 0.0).toString('GB', 2);
+      var list = await FileManager.getStorageList();
+      if (list.length > 1) {
+        var space = await DiskSpace.getFreeDiskSpaceForPath(list[1].path);
+        return space ?? 0;
       }
 
-      return "-";
+      return 0;
     } catch (err) {
-      return "-";
+      return 0;
     }
+  }
+
+  static Future<String?> getExternalPath() async {
+    try {
+      var ext = await getExternalCacheDirectories();
+      if (ext?.isNotEmpty ?? false) {
+        return ext?.first.path;
+      }
+      return null;
+    } catch (err) {
+      return null;
+    }
+  }
+
+  static Future<String> getFormatedExternalFreeDiskSpace() async {
+    var space = await getExternalFreeDiskSpace();
+    return ByteSize.FromMegaBytes(space).toString('GB', 2);
   }
 
   static Future<double?> getFreeDiskSpace() async {
@@ -77,6 +100,7 @@ class DiskUtils {
         Directory("$rootPath/$filename").create(recursive: true);
       }
     }
+    print(rootPath);
     return rootPath;
   }
 
@@ -117,5 +141,18 @@ class DiskUtils {
   static Future<String> getFormatedFolderSize() async {
     var size = await getFolderSize();
     return filesize(size);
+  }
+
+  static Future<bool> hasExternalDisk() async {
+    if (Platform.isIOS) return false;
+    var list = await FileManager.getStorageList();
+    var local = await getApplicationDocumentsDirectory();
+    var extPath = await getExternalPath();
+    var ext = await getExternalStorageDirectory();
+    print(local.path);
+    print(ext?.path);
+    print(extPath);
+    print(local.path);
+    return list.length > 1;
   }
 }
