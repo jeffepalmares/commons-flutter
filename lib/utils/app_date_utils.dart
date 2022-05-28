@@ -3,8 +3,10 @@ import 'package:intl/intl.dart';
 class AppDateUtils {
   static final f = DateFormat("yyyy-MM-dd HH:mm:ss");
 
-  static String formatDate(DateTime? date) {
+  static String formatDate(DateTime? date,
+      {String format = "yyyy-MM-dd HH:mm:ss"}) {
     date = date ?? DateTime.now();
+    var f = DateFormat(format);
     return f.format(date);
   }
 

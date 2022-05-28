@@ -1,6 +1,7 @@
 class AppError implements Exception {
   String message;
-  AppError(this.message);
+  dynamic data;
+  AppError(this.message, {this.data});
 
   @override
   String toString() {

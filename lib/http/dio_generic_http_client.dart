@@ -1,5 +1,7 @@
 import 'package:commons_flutter/constants/lib_constants.dart';
 import 'package:commons_flutter/exceptions/app_error.dart';
+import 'package:commons_flutter/http/app_custom_http_interceptor.dart';
+import 'package:commons_flutter/http/http_interceptor.dart';
 import 'package:commons_flutter/utils/app_string_utils.dart';
 import 'package:commons_flutter/utils/network_utils.dart';
 import 'package:dio/dio.dart';
@@ -11,7 +13,13 @@ class DioHttpClient implements AppHttpClient {
   Dio? _dio;
   String Function()? _getToken;
   int? _timeout;
-  DioHttpClient(String baseUrl, {int? timeout, String Function()? getToken}) {
+  ErrorHttpInterceptor? errorInterceptor;
+  DioHttpClient(
+    String baseUrl, {
+    int? timeout,
+    String Function()? getToken,
+    ErrorHttpInterceptor? errorInterceptor,
+  }) {
     _timeout = timeout ?? LibConstants.defaultTimeoutTenSeconds;
     _dio = Dio(BaseOptions(
       baseUrl: baseUrl,
@@ -21,6 +29,10 @@ class DioHttpClient implements AppHttpClient {
 
     _getToken = getToken;
     _dio?.interceptors.add(AppInterceptor());
+    if (errorInterceptor != null) {
+      _dio?.interceptors.add(AppCustomHttpInterceptor(errorInterceptor));
+      this.errorInterceptor = errorInterceptor;
+    }
   }
 
   @override
@@ -46,7 +58,6 @@ class DioHttpClient implements AppHttpClient {
   Future<T?> _executeRequest<T>(
       String method, String url, data, HttpRequestConfig? options) async {
     try {
-      //TODO AppAnalyticsUtils.log(name, parameters)
       await NetworkUtils.validateInternet();
       var configOptions = _getRequestOptions(method, url, data, options);
       _dio!.options.connectTimeout = options?.timeout ?? _timeout!;
@@ -60,7 +71,8 @@ class DioHttpClient implements AppHttpClient {
       if (response.data != null) {
         if (HttpResponseType.bytes != options?.responseType) {
           if (response.data['status'] == 'erro') {
-            throw AppError(response.data['mensagem']);
+            throw AppError(response.data['mensagem'],
+                data: response.requestOptions);
           }
         } else {
           return response as T;
@@ -69,7 +81,14 @@ class DioHttpClient implements AppHttpClient {
       }
       return null;
     } catch (err) {
-      //TODO AppAnalyticsUtils.log(name, parameters)
+      if (errorInterceptor == null) rethrow;
+
+      if (err is AppError) {
+        errorInterceptor?.handleCustomError(err);
+      } else {
+        errorInterceptor
+            ?.handleCustomError(AppError(err.toString(), data: err));
+      }
       rethrow;
     }
   }
