@@ -97,7 +97,8 @@ class DioHttpClient implements AppHttpClient {
       String method, String url, data, HttpRequestConfig? options) {
     var headers = options?.headers ?? {};
     var token = options?.token ?? (_getToken != null ? _getToken!() : null);
-    if (!AppStringUtils.isEmptyOrNull(token)) {
+    if (headers['Authorization'] == null &&
+        !AppStringUtils.isEmptyOrNull(token)) {
       headers['Authorization'] = 'Bearer $token';
     }
     headers['Content-Type'] = options?.contentType ?? "application/json";
