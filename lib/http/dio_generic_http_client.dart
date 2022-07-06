@@ -10,6 +10,7 @@ import 'app_interceptor.dart';
 import 'http_request_config.dart';
 
 class DioHttpClient implements AppHttpClient {
+  String? _baseUrl;
   Dio? _dio;
   String Function()? _getToken;
   int? _timeout;
@@ -22,11 +23,10 @@ class DioHttpClient implements AppHttpClient {
   }) {
     _timeout = timeout ?? LibConstants.defaultTimeoutTenSeconds;
     _dio = Dio(BaseOptions(
-      baseUrl: baseUrl,
       connectTimeout: _timeout,
       receiveTimeout: _timeout,
     ));
-
+    _baseUrl = baseUrl;
     _getToken = getToken;
     _dio?.interceptors.add(AppInterceptor());
     if (errorInterceptor != null) {
@@ -61,6 +61,9 @@ class DioHttpClient implements AppHttpClient {
       await NetworkUtils.validateInternet();
       var configOptions = _getRequestOptions(method, url, data, options);
       _dio!.options.connectTimeout = options?.timeout ?? _timeout!;
+
+      url = "${options?.baseUrl ?? _baseUrl}$url";
+
       var response = await _dio!.request(
         url,
         data: data,

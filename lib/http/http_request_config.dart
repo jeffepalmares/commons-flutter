@@ -5,6 +5,7 @@ class HttpRequestConfig {
   String? contentType;
   String? token;
   int? timeout;
+  String? baseUrl;
   HttpResponseType? responseType;
   Function(int count, int total)? receiveProgress;
 
@@ -14,6 +15,7 @@ class HttpRequestConfig {
     this.token,
     this.timeout,
     this.responseType,
+    this.baseUrl,
     this.receiveProgress,
   });
 }

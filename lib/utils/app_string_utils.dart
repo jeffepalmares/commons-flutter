@@ -51,4 +51,12 @@ class AppStringUtils {
       return "";
     }
   }
+
+  static bool contains(String? source, String value) {
+    try {
+      return (source?.contains(value) ?? false);
+    } catch (e) {
+      return false;
+    }
+  }
 }
