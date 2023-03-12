@@ -2,15 +2,34 @@ import 'dart:io';
 
 import 'package:archive/archive.dart';
 import 'package:byte_size/byte_size.dart';
+import 'package:commons_flutter/http/dio_generic_http_client.dart';
+import 'package:commons_flutter/utils/dependency_injector.dart';
+import 'package:dio/dio.dart';
 import 'package:filesize/filesize.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:disk_space/disk_space.dart';
 import 'package:storage_info/storage_info.dart';
 
+import '../exceptions/app_error.dart';
+
 class DiskUtils {
   static Future<double> getInternalFreeDiskSpace() async {
     var space = await DiskSpace.getFreeDiskSpace;
-    return space ?? 0;
+    return space ?? 0.0;
+  }
+
+  static handleError(err, String method) {
+    try {
+      DependencyInjector.get<DioHttpClient>()
+          .errorInterceptor
+          ?.handleCustomError(AppError("Erro: $method ",
+              data: RequestOptions(
+                path: method,
+                data: err.toString(),
+              )));
+    } catch (err) {
+      print(err);
+    }
   }
 
   static Future<String> getFormatedInternalFreeDiskSpace() async {
@@ -31,8 +50,8 @@ class DiskUtils {
   }
 
   static Future<double> getExternalFreeDiskSpace() async {
-    var space = await StorageInfo.getExternalStorageFreeSpaceInMB;
-    return space;
+    var space = await StorageInfo.getExternalStorageFreeSpace;
+    return space / 1024 / 1024;
   }
 
   static Future<String> getFormatedExternalFreeDiskSpace() async {
@@ -42,8 +61,8 @@ class DiskUtils {
   }
 
   static Future<double> getTotalExternalDiskSpace() async {
-    var space = await StorageInfo.getExternalStorageTotalSpaceInMB;
-    return space;
+    var space = await StorageInfo.getExternalStorageTotalSpace;
+    return space / 1024 / 1024;
   }
 
   static Future<String> getFormatedTotalExternalDiskSpace() async {
@@ -72,6 +91,7 @@ class DiskUtils {
       }
       return null;
     } catch (err) {
+      handleError(err, "getExternalPath");
       return null;
     }
   }

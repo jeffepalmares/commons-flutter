@@ -7,6 +7,7 @@ class HttpRequestConfig {
   int? timeout;
   String? baseUrl;
   HttpResponseType? responseType;
+  bool returnResponse = false;
   Function(int count, int total)? receiveProgress;
 
   HttpRequestConfig({

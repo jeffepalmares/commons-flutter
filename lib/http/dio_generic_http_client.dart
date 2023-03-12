@@ -63,7 +63,7 @@ class DioHttpClient implements AppHttpClient {
       _dio!.options.connectTimeout = options?.timeout ?? _timeout!;
 
       url = "${options?.baseUrl ?? _baseUrl}$url";
-
+      var returnResponse = options?.returnResponse ?? false;
       var response = await _dio!.request(
         url,
         data: data,
@@ -71,6 +71,9 @@ class DioHttpClient implements AppHttpClient {
         onReceiveProgress: options?.receiveProgress,
       );
       _dio!.options.connectTimeout = _timeout!;
+
+      if (returnResponse) return response as T;
+
       if (response.data != null) {
         if (HttpResponseType.bytes != options?.responseType) {
           if (response.data['status'] == 'erro') {
