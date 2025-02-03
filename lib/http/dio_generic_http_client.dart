@@ -75,6 +75,9 @@ class DioHttpClient implements AppHttpClient {
       if (returnResponse) return response as T;
 
       if (response.data != null && response.data != "") {
+        if (response.data is List) {
+          return response.data as T;
+        }
         if (HttpResponseType.bytes != options?.responseType) {
           if (response.data['status'] == 'erro') {
             throw AppError(response.data['mensagem'],
