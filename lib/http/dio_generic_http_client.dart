@@ -13,11 +13,11 @@ class DioHttpClient implements AppHttpClient {
   String? _baseUrl;
   Dio? _dio;
   String Function()? _getToken;
-  int? _timeout;
+  Duration? _timeout;
   ErrorHttpInterceptor? errorInterceptor;
   DioHttpClient(
     String baseUrl, {
-    int? timeout,
+    Duration? timeout,
     String Function()? getToken,
     ErrorHttpInterceptor? errorInterceptor,
   }) {

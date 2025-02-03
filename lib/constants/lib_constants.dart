@@ -1,3 +1,3 @@
 abstract class LibConstants {
-  static const int defaultTimeoutTenSeconds = 10000;
+  static const Duration defaultTimeoutTenSeconds = Duration(seconds: 10000);
 }

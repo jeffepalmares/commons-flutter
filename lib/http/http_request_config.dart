@@ -4,7 +4,7 @@ class HttpRequestConfig {
   Map<String, dynamic>? headers;
   String? contentType;
   String? token;
-  int? timeout;
+  Duration? timeout;
   String? baseUrl;
   HttpResponseType? responseType;
   bool returnResponse = false;
